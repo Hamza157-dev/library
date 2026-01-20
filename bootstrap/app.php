@@ -12,7 +12,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // global middleware
+        // $middleware->append(App\Http\Middleware\LangMiddleware::class);
+
+        
+        // middleware for "api" routes
+        $middleware->appendToGroup('api', App\Http\Middleware\LangMiddleware::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

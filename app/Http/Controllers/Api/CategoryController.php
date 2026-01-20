@@ -6,18 +6,21 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\ResponseHelper;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 
 class CategoryController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         // $categories =  Category::all();
         // $categories =  Category::withAvg('books' , 'price')->get();
         $categories =  Category::withCount('books')->get();
-       return ResponseHelper::success(' جميع الأصناف',$categories);
+                
+    //    return ResponseHelper::success(trans('library.all-categories'),$categories);
+       return ResponseHelper::success(__('library.all-categories'),$categories);
     }
 
     /**

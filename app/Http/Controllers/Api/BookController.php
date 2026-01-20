@@ -21,6 +21,7 @@ class BookController extends Controller
 
         // $book = Book::all();
 
+        /** using map to return custom fields */
         // $books = Book::select("ISBN" ,"title" ,  "price" ,"mortgage" ,"cover")
         // ->get()
         // ->map(function($book){
@@ -34,10 +35,9 @@ class BookController extends Controller
         // });
         // return ResponseHelper::success(' جميع الكتب', $books);
 
-        // if ($title){}
+        // if ($title){}, we use when() method instead of if condition
         
-        // $title = $request->has('title');
-        
+        // $title = $request->has('title');        
         $title = $request->title;
         $books = Book::select("id" ,"ISBN" ,"title" ,  "price" ,"mortgage" ,"cover" , "category_id")
         ->when($title , function($q ) use ($title) {
@@ -47,6 +47,7 @@ class BookController extends Controller
         ->orderBy('id' )
         ->get();
 
+        /** Using resource */
         return ResponseHelper::success(' جميع الكتب', BookResource::collection($books));
     }
 
