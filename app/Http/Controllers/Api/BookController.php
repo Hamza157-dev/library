@@ -36,16 +36,16 @@ class BookController extends Controller
         // return ResponseHelper::success(' جميع الكتب', $books);
 
         // if ($title){}, we use when() method instead of if condition
-        
+
         // $title = $request->has('title');        
         $title = $request->title;
-        $books = Book::select("id" ,"ISBN" ,"title" ,  "price" ,"mortgage" ,"cover" , "category_id")
-        ->when($title , function($q ) use ($title) {
-            return $q->where('title' , 'like' , "%$title%");
-        })
-        ->with(['authors', 'category'])
-        ->orderBy('id' )
-        ->get();
+        $books = Book::select("id", "ISBN", "title",  "price", "mortgage", "cover", "category_id")
+            ->when($title, function ($q) use ($title) {
+                return $q->where('title', 'like', "%$title%");
+            })
+            ->with(['authors', 'category'])
+            ->orderBy('id')
+            ->get();
 
         /** Using resource */
         return ResponseHelper::success(' جميع الكتب', BookResource::collection($books));
@@ -59,12 +59,12 @@ class BookController extends Controller
     public function store(StoreBookRequest $request)
     {
         //  return $request->all();
-        $book = Book::create($request->all());
+        $book = Book::create($request->validated());
 
-        if ($request->hasFile('cover')){
+        if ($request->hasFile('cover')) {
             $file = $request->file('cover');
             $filename = "$request->ISBN." . $file->extension();
-            Storage::putFileAs('book-images', $file ,$filename );
+            Storage::putFileAs('book-images', $file, $filename);
             $book->cover = $filename;
             $book->save();
         }
@@ -87,9 +87,21 @@ class BookController extends Controller
      */
     public function update(UpdateBookRequest $request, Book $book)
     {
-        $book->update($request->all());
-        return ResponseHelper::success("تمت تعديل الكتاب", $book);
+        $validated = $request->validated();
+        
+        if ($request->hasFile('cover')) {
+            $file = $request->file('cover');
+            $filename = "$request->ISBN." . $file->extension();
+            if ($book->cover) {
+                // return "book-images/$book->cover";
+                Storage::delete("book-images/$book->cover");
+            }
 
+            Storage::putFileAs('book-images', $file, $filename);
+            $validated['cover'] = $filename;
+        }
+        $book->update($validated);
+        return ResponseHelper::success("تمت تعديل الكتاب", $book);
     }
 
     /**
@@ -97,7 +109,10 @@ class BookController extends Controller
      */
     public function destroy(Book $book)
     {
+        if ($book->cover) {
+            Storage::delete("book-images/$book->cover");
+        }
         $book->delete();
-        return ResponseHelper::success("تمت حذف الكتاب", $book);
+        return ResponseHelper::success("تم حذف الكتاب");
     }
 }
