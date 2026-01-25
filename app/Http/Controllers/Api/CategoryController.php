@@ -48,7 +48,7 @@ class CategoryController extends Controller
             'name' => "required|max:50|unique:categories,name,$id"
         ]);
 
-        $category = Category::find($id);
+        $category = Category::findorfail($id);
         $category->name = $request->name;
         $category->save();
         return ResponseHelper::success("تم تعديل الصنف" , $category);
@@ -60,7 +60,7 @@ class CategoryController extends Controller
      */
     public function destroy(string $id)
     {
-        $category = Category::find($id);
+        $category = Category::findorfail($id);
         $category->delete();
         return ResponseHelper::success("تم حذف الصنف" , $category);
     }
