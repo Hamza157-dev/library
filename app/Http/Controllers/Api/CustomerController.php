@@ -1,0 +1,51 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Http\Resources\CustomerResource;
+use App\ResponseHelper;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+
+class CustomerController extends Controller
+{
+    public function update(Request $request)
+    {
+        $customer = $request->user()->customer;
+        $supported_extensions = config('image.supported_extensions');
+        $max_file_size =  config('image.max_file_size_small');
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'gender' => 'required|in:F,M',
+            'DOB' => 'required|date|before:today',
+            'phone' => "required|digits:10|unique:customers,phone,$customer->id",
+            'avatar' => "nullable|image|mimes:$supported_extensions|max:$max_file_size",
+        ]);
+
+        if ($request->hasFile('avatar')) {
+            // Delete old avatar
+            if ($customer->avatar) Storage::delete('customer-avatars/' . $customer->avatar);
+
+            $validated['avatar'] = $request->file('avatar')->store('customer-avatars');
+        }
+        $customer->update($validated);
+
+        $customer->user()->update([
+            'email' => $request->email
+        ]);
+
+        $customer->load('user');
+        return ResponseHelper::success('تم تحديث البيانات', new CustomerResource($customer));
+    }
+
+    function show(){
+        $customer =  Auth::user()->customer;        
+        $customer->load('user');
+
+        return ResponseHelper::success('بيانات الزبون', new CustomerResource($customer));
+    }
+
+}
