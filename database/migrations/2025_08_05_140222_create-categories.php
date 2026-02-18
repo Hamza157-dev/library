@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('categories' , function(Blueprint $table){
             $table->id();
             $table->string('name' , 50)->unique();
-            $table->string('image' , 100)->nullable();
         });
     }
 

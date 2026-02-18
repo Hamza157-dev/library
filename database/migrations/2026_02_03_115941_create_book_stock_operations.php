@@ -11,16 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('customers', function (Blueprint $table) {
+        Schema::create('book_stock_operations', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->index();
-            $table->enum('gender' , ['F' , 'M'] );
-            $table->date('DOB');
-            $table->char('phone' ,10)->unique();
-            $table->string('avatar' , 100)->nullable();
-
-            
-            $table->foreignId('user_id')->constrained()->unique();
+            $table->foreignId('book_id')->constrained();
+            $table->integer('quantity');
+            $table->enum('type', ['add', 'destroy']); // إضافة أو اتلاف
+            $table->boolean('remove_from_remaining')->default(false);
             $table->timestamps();
         });
     }
@@ -30,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('customers');
+        Schema::dropIfExists('book_stock_operations');
     }
 };

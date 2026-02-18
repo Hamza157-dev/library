@@ -11,16 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('customers', function (Blueprint $table) {
+        Schema::create('waiting_lists', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->index();
-            $table->enum('gender' , ['F' , 'M'] );
-            $table->date('DOB');
-            $table->char('phone' ,10)->unique();
-            $table->string('avatar' , 100)->nullable();
-
-            
-            $table->foreignId('user_id')->constrained()->unique();
+            $table->foreignId('customer_id')->constrained();
+            $table->foreignId('book_id')->constrained();
+            $table->unique(['book_id' , 'customer_id']);
             $table->timestamps();
         });
     }
@@ -30,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('customers');
+        Schema::dropIfExists('waiting_lists');
     }
 };

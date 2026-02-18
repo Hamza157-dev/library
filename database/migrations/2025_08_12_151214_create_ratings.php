@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('book_customer', function (Blueprint $table) {           
+        Schema::create('ratings', function (Blueprint $table) {           
             $table->foreignId('book_id')->constrained()->onDelete('cascade');
             $table->foreignId('customer_id')->constrained()->onDelete('cascade');
             $table->enum('rate' , [1 , 2, 3 ,4 ,5 ]);   
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('book_customer');
+        Schema::dropIfExists('ratings');
     }
 };

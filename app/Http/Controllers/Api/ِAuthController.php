@@ -7,46 +7,95 @@ use App\Models\User;
 use App\ResponseHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+
 
 class ِAuthController extends Controller
 {
-    function register(Request $request)   {
+    function register(Request $request)
+    {
+        $supported_extensions = config('image.supported_extensions');
+        $max_file_size =  config('image.max_file_size_small');
         $validated = $request->validate([
-            'name'     => ['required', 'string', 'max:255'],
             'email'    => ['required', 'email', 'unique:users'],
-            'password' => ['required', 'confirmed', 'min:8'],            
+            'password' => ['required', 'confirmed', 'min:8'],
+
+            'name'     => ['required', 'string', 'max:255'],
+            'gender' => ['required_if:type,customer', 'in:M,F'],
+            'phone' => ['required',  'digits:10', 'unique:customers'],
+            'DOB' => ['required', 'date', 'before:today'],
+            'avatar' => ['nullable', 'image', "mimes:$supported_extensions", "max:$max_file_size"],
+            'remember' => ['sometimes', 'boolean'],
         ]);
-        $user = User::create($validated);
-        $remember = $request->boolean('remember');
-       
-        Auth::login($user , $remember  );
+        $avatarPath = null;
+        if ($request->hasFile('avatar')) {
+            $avatarPath = $request->file('avatar')->store('customer-avatars'); //we make 'public' disk is default
+        }
+
+        DB::transaction(function () use ($validated, $avatarPath) {
+
+            $user = User::create([
+                'email' => $validated['email'],
+                'password' => $validated['password'],
+            ]);
+
+            $user->customer()->create([
+                'name' => $validated['name'],
+                'gender' => $validated['gender'],
+                'phone' => $validated['phone'],
+                'DOB' => $validated['DOB'],
+                'avatar' => $avatarPath,
+            ]);
+
+            $remember = isset($validated['remember']);
+            Auth::login($user, $remember);
+        });
 
         $request->session()->regenerate();
 
         return ResponseHelper::success("تم تسجيل الحساب بنجاح");
     }
-    
-    function login(Request $request){
-          $credentials = $request->validate([
+
+    function login(Request $request)
+    {
+
+        $validated = $request->validate([
             'email'    => ['required', 'email'],
-            'password' => ['required'],            
+            'password' => ['required'],
+            'remember' => ['sometimes', 'boolean'],
         ]);
-        if ( ! Auth::attempt($credentials ,    ))
+
+        $remember = isset($validated['remember']);
+
+        if (! Auth::attempt($request->only('email', 'password'),  $remember))
             throw ValidationException::withMessages(['email' => 'معلومات التوثق غير صحيحة']);
 
         $request->session()->regenerate();
 
         return ResponseHelper::success("تم تسجيل الدخول بنجاح");
-
     }
-    function logout(Request $request){
-        Auth::logout();
+
+    function logout(Request $request)
+    {
+        Auth::guard('web')->logout();
+
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         return ResponseHelper::success("تم تسجيل الخروج بنجاح");
-
     }
 
+    function changePassword(Request $request){
+        $validated = $request->validate([
+            'current_password' => ['required', 'current_password'],
+            'password' => ['required', 'confirmed', 'min:8'],            
+        ]);
+        
+        $request->user()->update([
+            'password' => $validated['password'],
+        ]);
+        return ResponseHelper::success("تم تغيير كلمة السر بنجاح");
+
+    }
     
 }

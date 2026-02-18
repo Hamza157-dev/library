@@ -21,8 +21,8 @@ class BookResource extends JsonResource
             "price" => $this->price ,
             "mortgage" => $this->mortgage ,
             "cover" =>  asset('storage/book-images/' . ($this->cover ?? 'no-image.jpeg')),
-            "category" => $this->category,
-            "authors" => $this->authors
+            "category" => $this->whenLoaded('category' , fn() => $this->category  ),
+            "authors" => $this->whenLoaded('authors' , fn() => $this->authors  ),
         ];
     }
 }

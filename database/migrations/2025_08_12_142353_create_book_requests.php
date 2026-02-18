@@ -13,9 +13,11 @@ return new class extends Migration
     {
         Schema::create('book_requests', function (Blueprint $table) {
             $table->id();
-            $table->string('book_title' ,70);
+            $table->string('book_title', 70);
+            $table->string('author_name')->nullable();
+            $table->enum('status', ['new', 'read', 'processed', 'rejected'])->default('new');
+            $table->text('admin_note')->nullable();
             $table->foreignId('customer_id')->constrained();
-            $table->foreignId('book_id')->constrained()->nullable();
             $table->timestamps();
         });
     }
