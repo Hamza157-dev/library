@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\CustomerResource;
-use App\ResponseHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -38,14 +37,14 @@ class CustomerController extends Controller
         ]);
 
         $customer->load('user');
-        return ResponseHelper::success('تم تحديث البيانات', new CustomerResource($customer));
+        return apiSuccess('تم تحديث البيانات', new CustomerResource($customer));
     }
 
     function show(){
         $customer =  Auth::user()->customer;        
         $customer->load('user');
 
-        return ResponseHelper::success('بيانات الزبون', new CustomerResource($customer));
+        return apiSuccess('بيانات الزبون', new CustomerResource($customer));
     }
 
 }

@@ -10,7 +10,9 @@ class Book extends Model
     /** @use HasFactory<\Database\Factories\BookFactory> */
     use HasFactory;
 
-     protected $fillable = ['ISBN', 'title', 'price', 'mortgage', 'category_id', 'cover', 'authorship_date'];
+     protected $fillable = ['ISBN' , 'title' , 'price' , 'mortgage' ,'pages',
+    'borrow_duration','total_copies','stock','authorship_date' ,'category_id'];
+ 
     //  protected $guraded = [];
 
 

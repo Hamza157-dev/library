@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\ResponseHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -54,7 +53,7 @@ class ِAuthController extends Controller
 
         $request->session()->regenerate();
 
-        return ResponseHelper::success("تم تسجيل الحساب بنجاح");
+        return apiSuccess("تم تسجيل الحساب بنجاح");
     }
 
     function login(Request $request)
@@ -73,7 +72,7 @@ class ِAuthController extends Controller
 
         $request->session()->regenerate();
 
-        return ResponseHelper::success("تم تسجيل الدخول بنجاح");
+        return apiSuccess("تم تسجيل الدخول بنجاح");
     }
 
     function logout(Request $request)
@@ -82,7 +81,7 @@ class ِAuthController extends Controller
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return ResponseHelper::success("تم تسجيل الخروج بنجاح");
+        return apiSuccess("تم تسجيل الخروج بنجاح");
     }
 
     function changePassword(Request $request){
@@ -94,7 +93,7 @@ class ِAuthController extends Controller
         $request->user()->update([
             'password' => $validated['password'],
         ]);
-        return ResponseHelper::success("تم تغيير كلمة السر بنجاح");
+        return apiSuccess("تم تغيير كلمة السر بنجاح");
 
     }
     
