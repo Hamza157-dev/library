@@ -4,6 +4,8 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Cookie;
 use Symfony\Component\HttpFoundation\Response;
 
 class LangMiddleware
@@ -15,21 +17,12 @@ class LangMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
-        /** 
-         * sent by browser like:
-         * ar-SY,ar;q=0.9,en-US;q=0.8,en;q=0.7 
-         */
-        $supported = ['en', 'ar'];
-        if ($request->hasHeader('Accept-Language')) {
-            $locale = substr($request->header('Accept-Language'), 0, 2);
-            if (! in_array($locale, $supported)) {
-                $locale = config('app.fallback_locale');
-            }
-        }
-        else 
-            $locale = config('app.locale');
+        if (Cookie::has('language')) {
+            $lang = Cookie::get('language');
+        } else 
+            $lang = $request->user()?->customer?->lang??config('app.locale');
 
-        app()->setLocale($locale);
+        App::setLocale($lang);
 
         return $next($request);
     }

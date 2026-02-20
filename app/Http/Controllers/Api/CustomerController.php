@@ -45,7 +45,7 @@ class CustomerController extends Controller
         $customer =  Auth::user()->customer;        
         $customer->load('user');
 
-        return apiSuccess('بيانات الزبون', new CustomerResource($customer));
+        return apiSuccess(__('library.customer-info'), new CustomerResource($customer));
     }
 
 }

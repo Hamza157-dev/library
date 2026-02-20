@@ -17,6 +17,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->statefulApi();
         $middleware->alias(['user-type' => UserType::class]);
 
+        //execlude lang from encryption
+        $middleware->encryptCookies(['lang']);
+
         // middleware for "api" routes
         $middleware->appendToGroup('api', App\Http\Middleware\LangMiddleware::class);
     })
