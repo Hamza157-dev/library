@@ -11,7 +11,7 @@ class Book extends Model
     use HasFactory;
 
      protected $fillable = ['ISBN' , 'title' , 'price' , 'mortgage' ,'pages',
-    'borrow_duration','total_copies','stock','authorship_date' ,'category_id'];
+    'borrow_duration','total_copies','stock','authorship_date' , 'cover','category_id' ];
  
     //  protected $guraded = [];
 
@@ -21,5 +21,30 @@ class Book extends Model
     }
     function authors(){
         return $this->belongsToMany(Author::class);
+    }
+
+    public function scopeSearch($query, array $filters = [])
+    {
+        return $query
+            ->when(isset($filters['title']) && $filters['title'], function ($q) use ($filters) {
+                return $q->where('title', 'like', "%{$filters['title']}%");
+            })
+            ->when(isset($filters['category_name']) && $filters['category_name'], function ($q) use ($filters) {
+                return $q->whereHas('category', function ($subQuery) use ($filters) {
+                    $subQuery->where('name', 'like', "%{$filters['category_name']}%");
+                });
+            })
+            ->when(isset($filters['author_name']) && $filters['author_name'], function ($q) use ($filters) {
+                return $q->whereHas('authors', function ($subQuery) use ($filters) {
+                    $subQuery->where('name', 'like', "%{$filters['author_name']}%");
+                });
+            });
+    }
+
+     public function rating()
+    {
+        return $this->belongsToMany(Customer::class, 'ratings')
+            ->withPivot('rate')
+            ->withTimestamps();
     }
 }

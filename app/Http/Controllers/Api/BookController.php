@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\BookRequest;
+use App\Http\Resources\BookCollection;
 use App\Models\Book;
 use App\Http\Resources\BookResource;
 use Illuminate\Http\Request;
@@ -15,14 +16,20 @@ class BookController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
-    {    
-        $books = Book::with(['authors', 'category'])
-            ->orderBy('id')
-            ->get();
+    public function index(Request $request)
+    {
 
-        /** Using resource */
-        return apiSuccess(' جميع الكتب', BookResource::collection($books));
+        $filters = $request->only(['title', 'category_name', 'author_name']);
+
+
+        $books = Book::with(['category', 'authors','rating'])
+            ->withAvg('rating as rating', 'ratings.rate')
+            ->search($filters)            
+            ->paginate(10);
+
+        // return $books;
+        /** Using resource-collection */
+        return apiSuccess(' جميع الكتب',  new BookCollection($books));
     }
 
     /**
@@ -31,7 +38,7 @@ class BookController extends Controller
     public function store(BookRequest $request)
     {
         $validated = $request->validated();
-        
+
         if ($request->hasFile('cover')) {
             $file = $request->file('cover');
             $filename = "$request->ISBN." . $file->extension();
@@ -42,7 +49,7 @@ class BookController extends Controller
 
         // ربط المؤلفين بالكتاب
         $book->authors()->attach($validated['authors'] ?? []);
-        
+
         // تحميل العلاقات لإرجاعها في الاستجابة
         $book->load(['category', 'authors']);
 
@@ -81,7 +88,7 @@ class BookController extends Controller
 
 
         $book->authors()->sync($validated['authors'] ?? []);
-        
+
         $book->load(['category', 'authors']);
 
         return apiSuccess("تمت تعديل الكتاب", $book);
