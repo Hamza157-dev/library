@@ -19,15 +19,18 @@ Route::patch('changePassword', [ِAuthController::class, 'changePassword']);
 Route::get('categories', [CategoryController::class, 'index']);
 Route::apiResource('books', BookController::class)->only('index', 'show');
 Route::apiResource('authors', AuthorController::class)->only('index');
+// For testing: anyone can suggest (no auth). Revert to customer-only when done testing.
+Route::post('books/suggest', [BookController::class, 'suggestBook']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('logout', [ِAuthController::class, 'logout']);
 
     Route::middleware('user-type:customer')->group(function () {
         Route::controller(CustomerController::class)->group(function () {
-            Route::get('/customer',  'show');
-            Route::put('/customer',  'update');
+            Route::get('/customer', 'show');
+            Route::put('/customer', 'update');
         });
+        Route::get('suggestions', [BookController::class, 'mySuggestions']);
     });
 
 
@@ -36,13 +39,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::controller(CategoryController::class)
             ->prefix('/categories')->group(
                 function () {
-                    Route::post('',  'store');
-                    Route::put('/{identifier}',  'update');
-                    Route::delete('/{id}',  'destroy');
+                    Route::post('', 'store');
+                    Route::put('/{identifier}', 'update');
+                    Route::delete('/{id}', 'destroy');
                 }
             );
 
         Route::apiResource('books', BookController::class)->except('index', 'show');
         Route::apiResource('authors', AuthorController::class)->except('index', 'show');
+        Route::get('suggestions', [BookController::class, 'indexSuggestions']);
     });
 });

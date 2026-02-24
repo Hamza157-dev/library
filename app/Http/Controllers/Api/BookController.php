@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\BookRequest;
 use App\Http\Resources\BookCollection;
 use App\Models\Book;
+use App\Models\SuggestBook;
 use App\Http\Resources\BookResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -104,5 +105,43 @@ class BookController extends Controller
         }
         $book->delete();
         return apiSuccess("تم حذف الكتاب");
+    }
+
+    /**
+     * Submit a book suggestion. For testing: public (no auth required). When logged in as customer, customer_id is stored.
+     */
+    public function suggestBook(Request $request)
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'author_name' => 'required|string|max:255',
+            'message' => 'nullable|string|max:255',
+        ]);
+
+        $customerId = $request->user()?->customer?->id;
+        $suggestion = SuggestBook::create([
+            ...$validated,
+            'customer_id' => $customerId,
+        ]);
+
+        return apiSuccess("تم إضافة اقتراح الكتاب", $suggestion);
+    }
+
+    /**
+     * Customer: list my own suggestions.
+     */
+    public function mySuggestions(Request $request)
+    {
+        $suggestions = $request->user()->customer->suggestions()->latest()->paginate(10);
+        return apiSuccess('اقتراحاتي', $suggestions);
+    }
+
+    /**
+     * Admin: list all suggestions.
+     */
+    public function indexSuggestions()
+    {
+        $suggestions = SuggestBook::with('customer')->latest()->paginate(10);
+        return apiSuccess('جميع الاقتراحات', $suggestions);
     }
 }

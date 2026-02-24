@@ -10,4 +10,9 @@ class Customer extends Model{
     function user(){
         return $this->belongsTo(User::class);
     }
+
+    public function suggestions()
+    {
+        return $this->hasMany(SuggestBook::class);
+    }
 }
